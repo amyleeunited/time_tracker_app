@@ -11,8 +11,10 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Provider<AuthBase>(
-      create: (context) => Auth(),
+    return MultiProvider(
+      providers: [
+        Provider<AuthBase>(create: (context) => Auth()),
+      ],
       child: MaterialApp(
         theme: ThemeData(
           primarySwatch: Colors.indigo,

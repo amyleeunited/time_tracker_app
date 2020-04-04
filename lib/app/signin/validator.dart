@@ -16,3 +16,8 @@ class EmailPasswordStringValidator{
   final String invalidPasswordErrorText = 'Password can\'t be empty';
 
 }
+
+class NewJobEntryStringValidator{
+  final StringValidator jobNameStringValidator = NonEmptyStringValidator();
+  final StringValidator rateStringValidator = NonEmptyStringValidator();
+}

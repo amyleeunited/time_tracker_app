@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker_app/common_widgets/platform_alert_dialog.dart';
 import 'package:time_tracker_app/common_widgets/platform_exception_alert_dialog.dart';
+import 'package:time_tracker_app/home/job_entries/job_entries_page.dart';
+import 'package:time_tracker_app/home/jobs/edit_job_page.dart';
+import 'package:time_tracker_app/home/jobs/jobs_list_tile.dart';
+import 'package:time_tracker_app/home/jobs/list_items_builder.dart';
 import 'package:time_tracker_app/home/model/job.dart';
-import 'package:time_tracker_app/home/new_job_page.dart';
 import 'package:time_tracker_app/services/auth.dart';
 import 'package:time_tracker_app/services/database.dart';
+import 'package:flutter/services.dart';
 
 class JobsPage extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
@@ -30,14 +33,10 @@ class JobsPage extends StatelessWidget {
     }
   }
 
-  Future<void> _createJob(BuildContext context) async {
+  Future<void> _delete(BuildContext context, Job job) async {
     try {
       final database = Provider.of<Database>(context, listen: false);
-      await database.createJob(
-        Job(
-            name: 'Finance',
-            ratePerHour: 20),
-      );
+      await database.deleteJob(job);
     } on PlatformException catch (e) {
       PlatformExceptionAlertDialog(
         title: 'Operation failed',
@@ -46,9 +45,9 @@ class JobsPage extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final database = Provider.of<Database>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text('Jobs'),
@@ -67,45 +66,34 @@ class JobsPage extends StatelessWidget {
           )
         ],
       ),
-      body: Column(
-        children: <Widget>[
-          _buildContent(context),
-        ],
-      ),
-
+      body: _buildContent(context),
       floatingActionButton: FloatingActionButton(
-          child: Icon(
-            Icons.add,
-          ),
-          onPressed: () => _createNewJob(context),
-    ),);
-  }
-
-  Widget _buildContent(BuildContext context) {
-    final database = Provider.of<Database>(context);
-    return StreamBuilder<List<Job>>(
-      stream: database.jobsStream(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final jobs = snapshot.data;
-          final children = jobs.map((job) => Text(job.name)).toList();
-          return ListView(
-            children: children,
-            shrinkWrap: true,
-          );
-        }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+        child: Icon(
+          Icons.add,
+        ),
+        onPressed: () => EditJobPage.show(context, database:database, job: null),
+      ),
     );
   }
 
-  void _createNewJob(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => NewJobPage(),
-      ),
+  Widget _buildContent(BuildContext context) {
+    final database = Provider.of<Database>(context, listen: false);
+    return StreamBuilder<List<Job>>(
+      stream: database.jobsStream(),
+      builder: (context, snapshot) {
+        return ListItemsBuilder(
+            snapshot: snapshot,
+            itemBuilder: (context, job) => Dismissible(
+                  background: Container(color: Colors.red),
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (direction) => _delete(context, job),
+                  child: JobsListTile(
+                    job: job,
+                    onTap: () => JobEntriesPage.show(context, job),
+                  ),
+                  key: Key('job-${job.id}'),
+                ));
+      },
     );
   }
 }
