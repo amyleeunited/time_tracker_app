@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker_app/app/signin/sign_in_page.dart';
+import 'package:time_tracker_app/home/home_page.dart';
 import 'package:time_tracker_app/home/jobs/jobs_page.dart';
 import 'package:time_tracker_app/services/auth.dart';
 import 'package:time_tracker_app/services/database.dart';
@@ -22,7 +23,7 @@ class LandingPage extends StatelessWidget {
           }
           return Provider<Database>(
               create: (_) => FirestoreDatabase(uid: user.uid),
-              child: JobsPage());
+              child: HomePage());
         } else return Scaffold(
           body: Center(
             child: CircularProgressIndicator(),
